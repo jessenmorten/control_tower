@@ -1,0 +1,12 @@
+[package]
+name = "control-tower"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.75"
+axum = "0.6.20"
+serde = { version = "1.0.189", features = ["derive"] }
+tokio = { version = "1.33.0", features = ["full"] }
+tracing = "0.1.37"
+tracing-subscriber = "0.3.17"
