@@ -5,7 +5,8 @@ async function main() {
     const start = Date.now();
     const greeting = await api.greet("Tower");
     const elapsed = Date.now() - start;
-    document.body.innerHTML += `
+    const main = document.querySelector("main");
+    main.innerHTML += `
         <h4>${greeting.greeting}</h4>
         <p>It took ${elapsed}ms to get this greeting.</p>
     `;
