@@ -1,10 +1,7 @@
-use axum::{
-    http::StatusCode,
-    routing::{get, post},
-    Json, Router, Server,
-};
+use axum::{http::StatusCode, routing::post, Json, Router, Server};
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
+use tower_http::services::ServeDir;
 use tracing::info;
 
 #[tokio::main]
@@ -13,18 +10,14 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
     let app = Router::new()
-        .route("/", get(root))
-        .route("/greet", post(greet));
+        .route("/api/greet", post(greet))
+        .nest_service("/", ServeDir::new("static/"));
 
     info!("listening on {}", addr);
     Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .expect("server failed to start");
-}
-
-async fn root() -> &'static str {
-    "Hello, World!"
 }
 
 async fn greet(Json(payload): Json<GreetingRequest>) -> (StatusCode, Json<GreetingResponse>) {
