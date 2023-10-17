@@ -1,5 +1,5 @@
-use axum::{http::StatusCode, routing::post, Json, Router, Server};
-use serde::{Deserialize, Serialize};
+use axum::{http::StatusCode, routing::get, Json, Router, Server};
+use serde::Serialize;
 use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tracing::info;
@@ -10,7 +10,7 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
     let app = Router::new()
-        .route("/api/greet", post(greet))
+        .route("/api/services", get(get_services))
         .nest_service("/", ServeDir::new("static/"));
 
     info!("listening on {}", addr);
@@ -20,23 +20,40 @@ async fn main() {
         .expect("server failed to start");
 }
 
-async fn greet(Json(payload): Json<GreetingRequest>) -> (StatusCode, Json<GreetingResponse>) {
-    let user = GreetingResponse {
-        name: payload.name.clone(),
-        greeting: format!("Hello, {}!", payload.name),
+async fn get_services() -> (StatusCode, Json<Vec<Service>>) {
+    let now = std::time::Instant::now();
+    let flaky_status = if now.elapsed().as_nanos() % 2 == 0 {
+        ServiceStatus::Healthy
+    } else {
+        ServiceStatus::Unhealthy
     };
 
-    info!("greeted {} with {}", payload.name, user.greeting);
-    (StatusCode::CREATED, Json(user))
-}
+    let services = vec![
+        Service {
+            name: "users".to_string(),
+            status: ServiceStatus::Healthy,
+        },
+        Service {
+            name: "payments".to_string(),
+            status: flaky_status,
+        },
+        Service {
+            name: "products".to_string(),
+            status: ServiceStatus::Healthy,
+        },
+    ];
 
-#[derive(Deserialize)]
-struct GreetingRequest {
-    name: String,
+    (StatusCode::OK, Json(services))
 }
 
 #[derive(Serialize)]
-struct GreetingResponse {
+enum ServiceStatus {
+    Healthy,
+    Unhealthy,
+}
+
+#[derive(Serialize)]
+struct Service {
     name: String,
-    greeting: String,
+    status: ServiceStatus,
 }
