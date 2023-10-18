@@ -4,9 +4,13 @@ use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tracing::info;
 
+mod config;
+mod monitor;
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init();
+    monitor::spawn_monitor();
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
     let app = Router::new()
@@ -46,7 +50,7 @@ async fn get_services() -> (StatusCode, Json<Vec<Service>>) {
     (StatusCode::OK, Json(services))
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 enum ServiceStatus {
     Healthy,
     Unhealthy,
