@@ -2,6 +2,7 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct ControlTowerConfig {
+    pub monitor_interval_seconds: u64,
     pub services: Vec<ServiceConfig>,
 }
 
@@ -19,6 +20,7 @@ pub struct HttpPingConfig {
 
 pub fn get_config() -> ControlTowerConfig {
     let config = ControlTowerConfig {
+        monitor_interval_seconds: 120,
         services: vec![
             ServiceConfig {
                 name: "example.com".to_string(),

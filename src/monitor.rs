@@ -9,10 +9,7 @@ use crate::{
 
 pub fn spawn_monitor() -> JoinHandle<()> {
     tokio::spawn(async move {
-        let mut interval = tokio::time::interval(Duration::from_secs(10));
-
         loop {
-            interval.tick().await;
             let config = config::get_config();
             for service in config.services {
                 tokio::spawn(async move {
@@ -22,6 +19,9 @@ pub fn spawn_monitor() -> JoinHandle<()> {
                     }
                 });
             }
+
+            let duration = Duration::from_secs(config.monitor_interval_seconds);
+            tokio::time::sleep(duration).await;
         }
     })
 }
