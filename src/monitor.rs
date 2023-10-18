@@ -1,21 +1,26 @@
 use std::time::Duration;
 
-use tokio::task::JoinHandle;
+use tokio::{sync::mpsc::UnboundedSender, task::JoinHandle};
 
 use crate::{
     config::{self},
-    ServiceStatus,
+    Service, ServiceStatus,
 };
 
-pub fn spawn_monitor() -> JoinHandle<()> {
+pub fn spawn_monitor(tx: UnboundedSender<Service>) -> JoinHandle<()> {
     tokio::spawn(async move {
         loop {
             let config = config::get_config();
             for service in config.services {
+                let tx = tx.clone();
                 tokio::spawn(async move {
                     if let Some(ping) = service.ping {
                         let status = ping_service(ping.url.clone(), ping.status_code).await;
-                        println!("{} is {:?}", ping.url, status);
+                        let service = Service {
+                            name: service.name,
+                            status,
+                        };
+                        tx.send(service).expect("failed to send service");
                     }
                 });
             }

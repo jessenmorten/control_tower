@@ -10,7 +10,15 @@ mod monitor;
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init();
-    monitor::spawn_monitor();
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+    monitor::spawn_monitor(tx);
+
+    tokio::spawn(async move {
+        while let Some(service) = rx.recv().await {
+            info!("{:?}", service);
+        }
+    });
+
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
     let app = Router::new()
@@ -56,8 +64,8 @@ enum ServiceStatus {
     Unhealthy,
 }
 
-#[derive(Serialize)]
-struct Service {
+#[derive(Serialize, Debug)]
+pub struct Service {
     name: String,
     status: ServiceStatus,
 }
