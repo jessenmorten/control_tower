@@ -1,6 +1,10 @@
-use axum::{http::StatusCode, routing::get, Json, Router, Server};
+use axum::{extract::State, http::StatusCode, routing::get, Json, Router, Server};
 use serde::Serialize;
-use std::net::SocketAddr;
+use std::{
+    collections::HashMap,
+    net::SocketAddr,
+    sync::{Arc, RwLock},
+};
 use tower_http::services::ServeDir;
 use tracing::info;
 
@@ -13,9 +17,16 @@ async fn main() {
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
     monitor::spawn_monitor(tx);
 
+    let shared_state = SharedState::default();
+    let state = shared_state.clone();
+
     tokio::spawn(async move {
         while let Some(service) = rx.recv().await {
-            info!("{:?}", service);
+            state
+                .write()
+                .unwrap()
+                .services
+                .insert(service.name.clone(), service.clone());
         }
     });
 
@@ -23,7 +34,8 @@ async fn main() {
 
     let app = Router::new()
         .route("/api/services", get(get_services))
-        .nest_service("/", ServeDir::new("static/"));
+        .nest_service("/", ServeDir::new("static/"))
+        .with_state(Arc::clone(&shared_state));
 
     info!("listening on {}", addr);
     Server::bind(&addr)
@@ -32,39 +44,25 @@ async fn main() {
         .expect("server failed to start");
 }
 
-async fn get_services() -> (StatusCode, Json<Vec<Service>>) {
-    let now = std::time::Instant::now();
-    let flaky_status = if now.elapsed().as_nanos() % 2 == 0 {
-        ServiceStatus::Healthy
-    } else {
-        ServiceStatus::Unhealthy
-    };
+type SharedState = Arc<RwLock<AppState>>;
 
-    let services = vec![
-        Service {
-            name: "users".to_string(),
-            status: ServiceStatus::Healthy,
-        },
-        Service {
-            name: "payments".to_string(),
-            status: flaky_status,
-        },
-        Service {
-            name: "products".to_string(),
-            status: ServiceStatus::Healthy,
-        },
-    ];
+#[derive(Default)]
+struct AppState {
+    services: HashMap<String, Service>,
+}
 
+async fn get_services(State(state): State<SharedState>) -> (StatusCode, Json<Vec<Service>>) {
+    let services = state.read().unwrap().services.values().cloned().collect();
     (StatusCode::OK, Json(services))
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 enum ServiceStatus {
     Healthy,
     Unhealthy,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct Service {
     name: String,
     status: ServiceStatus,
