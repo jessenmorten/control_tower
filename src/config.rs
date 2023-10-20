@@ -1,4 +1,7 @@
 use serde::Deserialize;
+use serde_json::from_reader;
+use std::{fs::File, io::BufReader, path::Path};
+use tracing::{error, info};
 
 #[derive(Deserialize)]
 pub struct ControlTowerConfig {
@@ -26,28 +29,24 @@ pub struct TcpPingConfig {
 }
 
 pub fn get_config() -> ControlTowerConfig {
-    let config = ControlTowerConfig {
-        monitor_interval_seconds: 120,
-
-        services: vec![
-            ServiceConfig {
-                name: "example.com".to_string(),
-                http_ping: Some(HttpPingConfig {
-                    url: "https://example.com".to_string(),
-                    status_code: 200,
-                }),
-                tcp_ping: None,
-            },
-            ServiceConfig {
-                name: "control_tower".to_string(),
-                http_ping: None,
-                tcp_ping: Some(TcpPingConfig {
-                    host: "127.0.0.1".to_string(),
-                    port: 3000,
-                }),
-            },
-        ],
+    let path = Path::new("config.json");
+    let config = match File::open(path) {
+        Ok(file) => {
+            let reader = BufReader::new(file);
+            match from_reader(reader) {
+                Ok(config) => config,
+                Err(err) => {
+                    error!("Failed to parse config.json: {}", err);
+                    std::process::exit(1);
+                }
+            }
+        }
+        Err(err) => {
+            error!("Failed to open config.json: {}", err);
+            std::process::exit(1);
+        }
     };
 
+    info!("Loaded config.json");
     config
 }

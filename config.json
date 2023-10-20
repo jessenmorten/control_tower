@@ -1,0 +1,19 @@
+{
+    "monitor_interval_seconds": 120,
+    "services": [
+        {
+            "name": "http:example",
+            "http_ping": {
+                "url": "http://127.0.0.1:3000",
+                "status_code": 200
+            }
+        },
+        {
+            "name": "tcp:example",
+            "tcp_ping": {
+                "host": "127.0.0.1",
+                "port": 3000
+            }
+        }
+    ]
+}
