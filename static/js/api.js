@@ -20,10 +20,6 @@ async function get(url) {
   return await apiFetch("GET", url);
 }
 
-async function post(url, payload) {
-  return await apiFetch("POST", url, payload);
-}
-
 async function apiFetch(method, url, payload) {
   try {
     const response = await fetch(url, {
