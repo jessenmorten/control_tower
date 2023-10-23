@@ -1,4 +1,4 @@
-import { Api } from "./api.js";
+import { Api, Service } from "./api.js";
 
 function createPingElement(color) {
     const ping = document.createElement("div");
@@ -35,11 +35,8 @@ function createPingElement(color) {
 function createServiceElement(service) {
     const name = document.createElement("h2");
     name.innerText = service.name;
-    const pingColor = {
-        Healthy: "green",
-        Unhealthy: "red",
-    };
-    const ping = createPingElement(pingColor[service.status]);
+    const pingColor = service.isHealthy() ? "green" : "red";
+    const ping = createPingElement(pingColor);
 
     const container = document.createElement("div");
     container.classList.add(

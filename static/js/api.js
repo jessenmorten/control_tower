@@ -14,6 +14,10 @@ export class Service {
         this.name = String(name);
         this.status = String(status);
     }
+
+    isHealthy() {
+        return this.status === "Healthy";
+    }
 }
 
 async function get(url) {
