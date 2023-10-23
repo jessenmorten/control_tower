@@ -32,7 +32,7 @@ async function apiFetch(method, url, payload) {
     });
     return await response.json();
   } catch (err) {
-    console.log(err);
+    console.error(err);
     throw err;
   }
 }
