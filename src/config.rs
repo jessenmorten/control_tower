@@ -12,6 +12,7 @@ pub struct ControlTowerConfig {
 #[derive(Deserialize)]
 pub struct ServiceConfig {
     pub name: String,
+    pub dependencies: Vec<String>,
     pub http_ping: Option<HttpPingConfig>,
     pub tcp_ping: Option<TcpPingConfig>,
 }

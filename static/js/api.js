@@ -3,16 +3,17 @@ export class Api {
         const data = await get("/api/services");
         const services = [];
         for (const service of data) {
-            services.push(new Service(service.name, service.status));
+            services.push(new Service(service.name, service.status, service.dependencies));
         }
         return services;
     }
 }
 
 export class Service {
-    constructor(name, status) {
+    constructor(name, status, dependencies) {
         this.name = String(name);
         this.status = String(status);
+        this.dependencies = dependencies;
     }
 
     isHealthy() {

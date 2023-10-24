@@ -26,6 +26,7 @@ pub fn spawn_monitor(tx: UnboundedSender<Service>) -> JoinHandle<()> {
                         tx.send(Service {
                             name: service.name,
                             status,
+                            dependencies: service.dependencies,
                         })
                         .expect("failed to send service");
                         return;
@@ -40,6 +41,7 @@ pub fn spawn_monitor(tx: UnboundedSender<Service>) -> JoinHandle<()> {
                         tx.send(Service {
                             name: service.name,
                             status,
+                            dependencies: service.dependencies,
                         })
                         .expect("failed to send service");
                         return;

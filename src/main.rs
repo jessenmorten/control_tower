@@ -66,4 +66,5 @@ enum ServiceStatus {
 pub struct Service {
     name: String,
     status: ServiceStatus,
+    dependencies: Vec<String>,
 }

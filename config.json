@@ -2,7 +2,16 @@
     "monitor_interval_seconds": 120,
     "services": [
         {
+            "name": "control_tower",
+            "dependencies": [],
+            "http_ping": {
+                "url": "http://127.0.0.1:3000",
+                "status_code": 200
+            }
+        },
+        {
             "name": "http:example",
+            "dependencies": ["control_tower"],
             "http_ping": {
                 "url": "http://127.0.0.1:3000",
                 "status_code": 200
@@ -10,6 +19,7 @@
         },
         {
             "name": "tcp:example",
+            "dependencies": ["control_tower"],
             "tcp_ping": {
                 "host": "127.0.0.1",
                 "port": 3000
