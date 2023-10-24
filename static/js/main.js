@@ -1,5 +1,13 @@
 import { Api, Service } from "./api.js";
-import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+
+function hasUnhealthyDependency(service, services) {
+    return service.dependencies.some((dependency) => {
+        const dependencyService = services.find((s) => s.name === dependency);
+        if (!dependencyService) return false;
+        return !dependencyService.isHealthy();
+    });
+}
 
 async function main() {
     const main = document.querySelector("main");
@@ -9,23 +17,35 @@ async function main() {
     newElement.classList.add("mermaid");
     let mermaidText = "flowchart TD\n";
     for (const service of services) {
-        mermaidText += `  ${service.name}(${service.name}):::${service.status}\n`;
-        for (const dependency of service.dependencies) {
-            mermaidText += `  ${service.name}:::${service.status} -.-> ${dependency}\n`;
+        const unhealthyDependency = hasUnhealthyDependency(service, services);
+
+        if (unhealthyDependency) {
+            mermaidText += `  ${service.name}(${service.name}):::UnhealthyDependency\n`;
+        } else {
+            mermaidText += `  ${service.name}(${service.name}):::${service.status}\n`;
         }
 
-        if (!service.isHealthy()) {
+        for (const dependency of service.dependencies) {
+            mermaidText += `  ${service.name} -.-> ${dependency}\n`;
+        }
+
+        if (!service.isHealthy() || unhealthyDependency) {
             mermaidText += `  class ${service.name} animate-pulse\n`;
         }
     }
-    mermaidText += "classDef Healthy color:white,fill:green,stroke:#333,stroke-width:2px;\n";
-    mermaidText += "classDef Unhealthy color:white,fill:red,stroke:#333,stroke-width:2px;\n";
+
+    mermaidText +=
+        "classDef Healthy color:white,fill:green,stroke:#333,stroke-width:2px;\n";
+    mermaidText +=
+        "classDef Unhealthy color:white,fill:red,stroke:#333,stroke-width:2px;\n";
+    mermaidText +=
+        "classDef UnhealthyDependency color:white,fill:orange,stroke:#333,stroke-width:2px;\n";
     newElement.innerHTML = mermaidText;
     main.innerHTML = "";
     main.appendChild(newElement);
 
     await mermaid.run({
-      querySelector: '.mermaid',
+        querySelector: ".mermaid",
     });
 }
 
