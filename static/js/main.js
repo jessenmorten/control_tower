@@ -13,6 +13,10 @@ async function main() {
         for (const dependency of service.dependencies) {
             mermaidText += `  ${service.name}:::${service.status} -.-> ${dependency}\n`;
         }
+
+        if (!service.isHealthy()) {
+            mermaidText += `  class ${service.name} animate-pulse\n`;
+        }
     }
     mermaidText += "classDef Healthy color:white,fill:green,stroke:#333,stroke-width:2px;\n";
     mermaidText += "classDef Unhealthy color:white,fill:red,stroke:#333,stroke-width:2px;\n";
