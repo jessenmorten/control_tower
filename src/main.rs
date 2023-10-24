@@ -52,7 +52,8 @@ struct AppState {
 }
 
 async fn get_services(State(state): State<SharedState>) -> (StatusCode, Json<Vec<Service>>) {
-    let services = state.read().unwrap().services.values().cloned().collect();
+    let mut services: Vec<Service> = state.read().unwrap().services.values().cloned().collect();
+    services.sort_by(|a, b| a.name.cmp(&b.name));
     (StatusCode::OK, Json(services))
 }
 
