@@ -35,11 +35,11 @@ async function main() {
     }
 
     mermaidText +=
-        "classDef Healthy color:white,fill:green,stroke:#333,stroke-width:2px;\n";
+        "classDef Healthy font-weight:bold,color:#022c22,fill:#4ade80,stroke:#022c22,stroke-width:2px;\n";
     mermaidText +=
-        "classDef Unhealthy color:white,fill:red,stroke:#333,stroke-width:2px;\n";
+        "classDef Unhealthy font-weight:bold,color:#450a0a,fill:#ef4444,stroke:#450a0a,stroke-width:2px;\n";
     mermaidText +=
-        "classDef UnhealthyDependency color:white,fill:orange,stroke:#333,stroke-width:2px;\n";
+        "classDef UnhealthyDependency font-weight:bold,color:#422006,fill:#facc15,stroke:#422006,stroke-width:2px;\n";
     newElement.innerHTML = mermaidText;
     main.innerHTML = "";
     main.appendChild(newElement);
@@ -47,6 +47,7 @@ async function main() {
     await mermaid.run({
         querySelector: ".mermaid",
     });
+    newElement.firstChild.classList.add("mx-auto");
 }
 
 mermaid.initialize({ startOnLoad: false });
