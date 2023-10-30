@@ -37,7 +37,7 @@ async fn main() {
         .nest_service("/", ServeDir::new("static/"))
         .with_state(Arc::clone(&shared_state));
 
-    info!("listening on {}", addr);
+    info!("listening on http://{}", addr);
     Server::bind(&addr)
         .serve(app.into_make_service())
         .await
