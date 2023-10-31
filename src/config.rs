@@ -15,6 +15,7 @@ pub struct ServiceConfig {
     pub dependencies: Vec<String>,
     pub http_ping: Option<HttpPingConfig>,
     pub tcp_ping: Option<TcpPingConfig>,
+    pub asp_health_check: Option<AspHealthCheckConfig>,
 }
 
 #[derive(Deserialize)]
@@ -27,6 +28,11 @@ pub struct HttpPingConfig {
 pub struct TcpPingConfig {
     pub host: String,
     pub port: u16,
+}
+
+#[derive(Deserialize)]
+pub struct AspHealthCheckConfig {
+    pub url: String,
 }
 
 pub fn get_config() -> ControlTowerConfig {
